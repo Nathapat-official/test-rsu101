@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตลาดวันนี้ | ข่าวหุ้น</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --surface: #ffffff;
+    --ink: #1b1d22;
+    --muted: #6b6f78;
+    --line: #e3e1da;
+    --accent: #0f4c81;
+    --up: #128a4a;
+    --down: #c62f2f;
+    --chip: #eceae3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121418; --surface: #1b1e24; --ink: #ecedf0; --muted: #9aa0ab;
+      --line: #2c3038; --accent: #6aa8e0; --up: #3ecb7c; --down: #ff6b6b; --chip: #262a32;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Sarabun", system-ui, sans-serif; font-size: 16px; line-height: 1.6;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; }
+
+  /* Ticker */
+  .ticker { background: var(--ink); color: var(--bg); overflow: hidden; white-space: nowrap; font-size: 14px; }
+  .ticker-track { display: inline-block; padding-block: 8px; animation: scroll 40s linear infinite; }
+  .ticker span { margin-right: 32px; }
+  .ticker .up { color: #4fe08f; } .ticker .down { color: #ff8080; }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+  /* Header */
+  header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding-block: 20px; }
+  .logo { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
+  .logo b { color: var(--accent); }
+  .date { color: var(--muted); font-size: 14px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 14px; }
+  nav button {
+    font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+    padding: 4px 14px; border-radius: 999px; cursor: pointer;
+  }
+  nav button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  main { padding-block: 28px 48px; display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+
+  /* Lead story */
+  .lead { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; }
+  .lead h2 { font-size: clamp(22px, 3.2vw, 32px); line-height: 1.3; margin: 6px 0 10px; }
+  .lead p { color: var(--muted); margin: 0 0 12px; }
+  .meta { font-size: 13px; color: var(--muted); }
+
+  /* News grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px; transition: border-color .15s; }
+  .card:hover { border-color: var(--accent); }
+  .card h3 { font-size: 18px; line-height: 1.4; margin: 0; }
+  .card p { font-size: 15px; color: var(--muted); margin: 0; flex: 1; }
+  .card .row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
+  .chg { font-weight: 600; }
+  .chg.up { color: var(--up); } .chg.down { color: var(--down); }
+
+  /* Sidebar */
+  aside section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  aside h4 { margin: 0 0 10px; font-size: 16px; }
+  .idx { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; font-size: 14px; align-items: center; }
+  .idx .v { text-align: right; }
+  .movers li { display: flex; justify-content: space-between; padding-block: 6px; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .movers li:last-child { border-bottom: 0; }
+  .movers { list-style: none; margin: 0; padding: 0; }
+  .sub input {
+    width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); color: var(--ink); margin-bottom: 8px;
+  }
+  .sub button { width: 100%; font: inherit; font-weight: 600; padding: 8px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+  .sub .msg { font-size: 13px; color: var(--up); margin-top: 8px; }
+
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; padding-block: 20px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="ticker" aria-label="ราคาหุ้นล่าสุด">
+  <div class="ticker-track mono" id="ticker"></div>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="head">
+      <h1 class="logo">ตลาด<b>วันนี้</b></h1>
+      <span class="date" id="today"></span>
+    </div>
+    <nav id="filters" aria-label="หมวดข่าว">
+      <button aria-pressed="true" data-cat="all">ทั้งหมด</button>
+      <button aria-pressed="false" data-cat="หุ้นไทย">หุ้นไทย</button>
+      <button aria-pressed="false" data-cat="ต่างประเทศ">ต่างประเทศ</button>
+      <button aria-pressed="false" data-cat="เศรษฐกิจ">เศรษฐกิจ</button>
+      <button aria-pressed="false" data-cat="คริปโต">คริปโต</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <main>
+    <div>
+      <article class="lead">
+        <span class="tag">ข่าวเด่น · หุ้นไทย</span>
+        <h2>ดัชนีปิดบวกแรง 18 จุด รับแรงซื้อกลุ่มพลังงานและธนาคาร ต่างชาติกลับมาซื้อสุทธิ</h2>
+        <p>นักวิเคราะห์ประเมินว่าแรงซื้อที่กลับเข้ามาสะท้อนความเชื่อมั่นต่อทิศทางดอกเบี้ยขาลง พร้อมแนะจับตาตัวเลขการส่งออกที่จะประกาศสัปดาห์หน้า</p>
+        <div class="meta">อัปเดต 17:05 น. · อ่าน 3 นาที</div>
+      </article>
+
+      <div class="grid" id="news"></div>
+    </div>
+
+    <aside>
+      <section>
+        <h4>ดัชนีสำคัญ</h4>
+        <div class="idx mono" id="indices"></div>
+      </section>
+      <section>
+        <h4>หุ้นเคลื่อนไหวเด่น</h4>
+        <ul class="movers mono" id="movers"></ul>
+      </section>
+      <section class="sub">
+        <h4>รับสรุปข่าวทุกเช้า</h4>
+        <form id="subForm">
+          <input type="email" id="email" placeholder="อีเมลของคุณ" required>
+          <button type="submit">สมัครรับข่าว</button>
+        </form>
+        <div class="msg" id="subMsg" hidden>ขอบคุณ! เราจะส่งสรุปข่าวให้คุณทุกเช้า</div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    © 2026 ตลาดวันนี้ · ข้อมูลและข่าวในหน้านี้เป็นตัวอย่างสมมติเพื่อการสาธิต ไม่ใช่คำแนะนำการลงทุน
+  </div>
+</footer>
+
+<script>
+  // ---- ข้อมูลตัวอย่าง (สมมติ) ----
+  const quotes = [
+    ["SETX", 1452.36, 1.26], ["ALPHA", 38.50, 2.4], ["BETA", 112.0, -1.3],
+    ["GAMMA", 7.85, 0.6], ["DELTA", 245.0, -2.1], ["OMEGA", 19.20, 3.8],
+    ["NOVA", 64.75, -0.4], ["ZETA", 5.10, 1.0]
+  ];
+  const indices = [
+    ["SETX", 1452.36, 1.26], ["ASIA50", 3820.10, -0.35],
+    ["US TECH", 18240.55, 0.88], ["ทองคำ", 2685.40, 0.42], ["น้ำมัน", 72.15, -1.12]
+  ];
+  const movers = [["OMEGA", 3.8], ["ALPHA", 2.4], ["DELTA", -2.1], ["BETA", -1.3]];
+  const news = [
+    { cat: "หุ้นไทย", title: "ALPHA โชว์กำไรไตรมาส 3 โต 25% เกินคาด", body: "ยอดขายในประเทศฟื้นตัวชัด ผู้บริหารมั่นใจทั้งปีเติบโตเลขสองหลัก", sym: "ALPHA", chg: 2.4, time: "16:40" },
+    { cat: "ต่างประเทศ", title: "หุ้นเทคโนโลยีสหรัฐฯ ทำนิวไฮ รับกระแส AI", body: "นักลงทุนเพิ่มน้ำหนักกลุ่มชิปและคลาวด์ ก่อนประกาศงบรอบใหม่", sym: "US TECH", chg: 0.88, time: "15:20" },
+    { cat: "เศรษฐกิจ", title: "กนง. ส่งสัญญาณคงดอกเบี้ย จับตาเงินเฟ้อปลายปี", body: "ตลาดคาดการณ์มีโอกาสลดดอกเบี้ยในไตรมาสแรกของปีหน้า", sym: "", chg: null, time: "14:55" },
+    { cat: "หุ้นไทย", title: "DELTA ร่วงหลังประกาศเลื่อนแผนขยายโรงงาน", body: "โบรกฯ ปรับลดราคาเป้าหมาย แต่ยังมองพื้นฐานระยะยาวแข็งแกร่ง", sym: "DELTA", chg: -2.1, time: "13:30" },
+    { cat: "คริปโต", title: "บิตคอยน์แกว่งตัวแคบ รอปัจจัยใหม่", body: "ปริมาณซื้อขายลดลง นักลงทุนรอดูทิศทางนโยบายการเงินโลก", sym: "BTC", chg: -0.7, time: "12:10" },
+    { cat: "ต่างประเทศ", title: "ตลาดหุ้นเอเชียผสม หลังข้อมูลการผลิตอ่อนแอ", body: "ดัชนีภาคการผลิตต่ำกว่าคาด กดดันกลุ่มอุตสาหกรรมหนัก", sym: "ASIA50", chg: -0.35, time: "11:45" },
+    { cat: "เศรษฐกิจ", title: "ราคาน้ำมันลดลง หลังสต็อกเพิ่มขึ้นเกินคาด", body: "ส่งผลบวกต่อกลุ่มขนส่งและสายการบิน แต่กดดันหุ้นพลังงานต้นน้ำ", sym: "น้ำมัน", chg: -1.12, time: "10:30" },
+    { cat: "หุ้นไทย", title: "OMEGA พุ่งแรง หลังคว้าสัญญาโครงการภาครัฐ", body: "มูลค่างานในมือแตะระดับสูงสุดเป็นประวัติการณ์", sym: "OMEGA", chg: 3.8, time: "10:05" }
+  ];
+
+  const fmt = n => n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const sign = c => (c >= 0 ? "▲ +" : "▼ ") + c.toFixed(2) + "%";
+  const cls = c => (c >= 0 ? "up" : "down");
+
+  // วันที่
+  document.getElementById("today").textContent =
+    new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+  // Ticker (ทำซ้ำสองรอบเพื่อให้เลื่อนต่อเนื่อง)
+  const tickHTML = quotes.map(([s, p, c]) => `<span>${s} ${fmt(p)} <span class="${cls(c)}">${sign(c)}</span></span>`).join("");
+  document.getElementById("ticker").innerHTML = tickHTML + tickHTML;
+
+  // ดัชนี
+  document.getElementById("indices").innerHTML = indices.map(([n, v, c]) =>
+    `<span>${n}</span><span class="v">${fmt(v)}</span><span class="chg ${cls(c)}">${sign(c)}</span>`).join("");
+
+  // หุ้นเด่น
+  document.getElementById("movers").innerHTML = movers.map(([s, c]) =>
+    `<li><span>${s}</span><span class="chg ${cls(c)}">${sign(c)}</span></li>`).join("");
+
+  // ข่าว + ตัวกรอง
+  function renderNews(cat) {
+    const list = cat === "all" ? news : news.filter(n => n.cat === cat);
+    document.getElementById("news").innerHTML = list.map(n => `
+      <article class="card">
+        <span class="tag">${n.cat}</span>
+        <h3>${n.title}</h3>
+        <p>${n.body}</p>
+        <div class="row">
+          <span>${n.time} น.</span>
+          ${n.chg !== null ? `<span class="mono chg ${cls(n.chg)}">${n.sym} ${sign(n.chg)}</span>` : ""}
+        </div>
+      </article>`).join("");
+  }
+  renderNews("all");
+
+  document.getElementById("filters").addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-pressed", b === btn));
+    renderNews(btn.dataset.cat);
+  });
+
+  // ฟอร์มสมัครรับข่าว (สาธิต ไม่มีการส่งข้อมูลจริง)
+  document.getElementById("subForm").addEventListener("submit", e => {
+    e.preventDefault();
+    e.target.hidden = true;
+    document.getElementById("subMsg").hidden = false;
+  });
+</script>
+</body>
+</html>
