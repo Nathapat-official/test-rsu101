@@ -5,119 +5,146 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตลาดวันนี้ | ข่าวหุ้น</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Noto+Serif+Thai:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f5f1;
-    --surface: #ffffff;
-    --ink: #1b1d22;
-    --muted: #6b6f78;
-    --line: #e3e1da;
-    --accent: #0f4c81;
-    --up: #128a4a;
-    --down: #c62f2f;
-    --chip: #eceae3;
+    --bg: #eff2ec;
+    --ink: #15211c;
+    --muted: #5d6b63;
+    --line: #cdd5ca;
+    --accent: #0d3b2e;
+    --up: #0f7a47;
+    --down: #c4372b;
+    --gold: #d9a31f;
+    --board: #0d3b2e;
+    --board-ink: #e8efe9;
+    --board-muted: #9db3a8;
+    --board-line: #285646;
+    --focus: #0d3b2e;
+    color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #121418; --surface: #1b1e24; --ink: #ecedf0; --muted: #9aa0ab;
-      --line: #2c3038; --accent: #6aa8e0; --up: #3ecb7c; --down: #ff6b6b; --chip: #262a32;
+      --bg: #111815; --ink: #e6ede8; --muted: #9aaba1; --line: #2b3a33;
+      --accent: #7fd1a8; --up: #4cd18a; --down: #ff7a6b;
+      --board: #0a2a21; --board-line: #21493b; --focus: #7fd1a8;
       color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "Sarabun", system-ui, sans-serif; font-size: 16px; line-height: 1.6;
+    font-family: "IBM Plex Sans Thai", system-ui, sans-serif; font-size: 16px; line-height: 1.7;
+    font-variant-numeric: tabular-nums;
   }
-  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  h1, h2, h3, h4, p, ul { margin: 0; }
+  .serif { font-family: "Noto Serif Thai", Georgia, serif; }
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .chg { font-weight: 600; white-space: nowrap; }
 
   /* Ticker */
-  .ticker { background: var(--ink); color: var(--bg); overflow: hidden; white-space: nowrap; font-size: 14px; }
-  .ticker-track { display: inline-block; padding-block: 8px; animation: scroll 40s linear infinite; }
-  .ticker span { margin-right: 32px; }
-  .ticker .up { color: #4fe08f; } .ticker .down { color: #ff8080; }
+  .ticker { border-bottom: 1px solid var(--line); overflow: hidden; white-space: nowrap; font-size: 14px; }
+  .ticker-track { display: inline-block; padding-block: 6px; animation: scroll 45s linear infinite; }
+  .ticker-track > span { margin-right: 36px; }
   @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } .ticker { overflow-x: auto; } }
 
-  /* Header */
-  header { border-bottom: 1px solid var(--line); background: var(--surface); }
-  .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; padding-block: 20px; }
-  .logo { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
-  .logo b { color: var(--accent); }
-  .date { color: var(--muted); font-size: 14px; }
-  nav { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 14px; }
+  /* Masthead */
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-block: 24px 12px; }
+  .logo { font-size: clamp(34px, 6vw, 52px); font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+  .date { color: var(--muted); font-size: 15px; }
+
+  nav { display: flex; gap: 4px 24px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); }
   nav button {
-    font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--chip); color: var(--ink);
-    padding: 4px 14px; border-radius: 999px; cursor: pointer;
+    font: inherit; font-size: 16px; font-weight: 500; color: var(--muted); background: none; border: 0;
+    border-bottom: 4px solid transparent; margin-bottom: -2px; padding: 6px 0 8px; cursor: pointer;
   }
-  nav button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  nav button:hover { color: var(--ink); }
+  nav button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--gold); }
 
-  main { padding-block: 28px 48px; display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  /* Hero */
+  .hero { display: grid; grid-template-columns: 1fr minmax(320px, 440px); gap: 40px; padding-block: 36px 40px; align-items: start; }
+  .lead-cat { font-weight: 600; color: var(--accent); }
+  .lead h2 { font-size: clamp(28px, 4.2vw, 46px); font-weight: 800; line-height: 1.35; margin: 8px 0 16px; }
+  .lead p { color: var(--muted); font-size: 18px; max-width: 60ch; margin-bottom: 14px; }
+  .meta { font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
 
-  /* Lead story */
-  .lead { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
-  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; }
-  .lead h2 { font-size: clamp(22px, 3.2vw, 32px); line-height: 1.3; margin: 6px 0 10px; }
-  .lead p { color: var(--muted); margin: 0 0 12px; }
-  .meta { font-size: 13px; color: var(--muted); }
-
-  /* Gold chart */
-  .chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
-  .chart-head h3 { margin: 0; font-size: 18px; }
-  .chart-price { font-size: 26px; font-weight: 600; }
+  /* Board: gold chart */
+  .board { background: var(--board); color: var(--board-ink); border-radius: 4px; padding: 20px 20px 16px; }
+  .board h3 { font-size: 16px; font-weight: 500; color: var(--board-muted); }
+  .board-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 2px 0 10px; }
+  .board-price strong { font-size: clamp(36px, 5vw, 48px); font-weight: 600; line-height: 1.2; }
+  .board .up { color: #5fe0a0; } .board .down { color: #ff8f82; }
   .chart-wrap { position: relative; }
   #goldChart { width: 100%; height: auto; display: block; touch-action: none; }
-  #goldChart text { fill: var(--muted); font-size: 11px; font-family: "IBM Plex Mono", monospace; }
-  #goldChart .grid-line { stroke: var(--line); stroke-width: 1; }
+  #goldChart text { fill: var(--board-muted); font-size: 11px; font-family: "IBM Plex Sans Thai", sans-serif; }
+  #goldChart .grid-line { stroke: var(--board-line); stroke-width: 1; }
+  #goldChart .line { stroke-dasharray: 1; stroke-dashoffset: 0; animation: draw 1.4s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { #goldChart .line { animation: none; } }
   .chart-tip {
-    position: absolute; pointer-events: none; background: var(--ink); color: var(--bg);
-    font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -130%);
+    position: absolute; pointer-events: none; background: var(--board-ink); color: var(--board);
+    font-size: 13px; font-weight: 500; padding: 2px 8px; border-radius: 3px; white-space: nowrap; transform: translate(-50%, -140%);
   }
-  .chart-foot { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .board-foot { font-size: 12px; color: var(--board-muted); margin-top: 8px; line-height: 1.5; }
 
-  /* News grid */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px; transition: border-color .15s; }
-  .card:hover { border-color: var(--accent); }
-  .card h3 { font-size: 18px; line-height: 1.4; margin: 0; }
-  .card p { font-size: 15px; color: var(--muted); margin: 0; flex: 1; }
-  .card .row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); }
-  .chg { font-weight: 600; }
-  .chg.up { color: var(--up); } .chg.down { color: var(--down); }
+  /* Content layout */
+  .content { display: grid; grid-template-columns: 1fr 300px; gap: 48px; padding-bottom: 56px; align-items: start; }
+  .section-title { font-size: 22px; font-weight: 800; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+
+  /* News list */
+  .story { display: grid; grid-template-columns: 64px 1fr auto; gap: 4px 20px; padding-block: 18px; border-bottom: 1px solid var(--line); }
+  .story-time { font-size: 15px; color: var(--muted); padding-top: 3px; }
+  .story h3 { font-size: 20px; font-weight: 600; line-height: 1.5; }
+  .story p { color: var(--muted); font-size: 16px; margin-top: 2px; max-width: 62ch; }
+  .story-cat { font-size: 14px; color: var(--accent); font-weight: 600; margin-top: 6px; display: inline-block; }
+  .story-chg { text-align: right; padding-top: 3px; font-size: 15px; }
+  .story-chg small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+  .empty { padding-block: 32px; color: var(--muted); }
 
   /* Sidebar */
-  aside section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 20px; }
-  aside h4 { margin: 0 0 10px; font-size: 16px; }
-  .idx { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 12px; font-size: 14px; align-items: center; }
+  aside > section { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+  aside > section:last-child { border-bottom: 0; }
+  aside h4 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .idx { display: grid; grid-template-columns: 1fr auto auto; gap: 6px 14px; font-size: 15px; align-items: baseline; }
   .idx .v { text-align: right; }
-  .movers li { display: flex; justify-content: space-between; padding-block: 6px; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .movers { list-style: none; padding: 0; }
+  .movers li { display: flex; justify-content: space-between; padding-block: 6px; border-bottom: 1px solid var(--line); font-size: 15px; }
   .movers li:last-child { border-bottom: 0; }
-  .movers { list-style: none; margin: 0; padding: 0; }
+  .sub p { color: var(--muted); font-size: 15px; margin-bottom: 10px; }
   .sub input {
-    width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
-    background: var(--bg); color: var(--ink); margin-bottom: 8px;
+    width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--muted); border-radius: 3px;
+    background: transparent; color: var(--ink); margin-bottom: 8px;
   }
-  .sub button { width: 100%; font: inherit; font-weight: 600; padding: 8px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
-  .sub .msg { font-size: 13px; color: var(--up); margin-top: 8px; }
+  .sub button { width: 100%; font: inherit; font-weight: 600; padding: 9px; border: 0; border-radius: 3px; background: var(--gold); color: #1d1604; cursor: pointer; }
+  .sub button:hover { filter: brightness(1.06); }
+  .sub .msg { font-size: 15px; color: var(--up); font-weight: 500; }
 
-  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; padding-block: 20px; }
+  footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; padding-block: 20px; }
   [hidden] { display: none !important; }
+
+  @media (max-width: 900px) {
+    .hero, .content { grid-template-columns: 1fr; gap: 32px; }
+  }
+  @media (max-width: 520px) {
+    .story { grid-template-columns: 1fr auto; }
+    .story-time { grid-column: 1 / -1; padding-top: 0; }
+  }
 </style>
 </head>
 <body>
 
 <div class="ticker" aria-label="ราคาหุ้นล่าสุด">
-  <div class="ticker-track mono" id="ticker"></div>
+  <div class="ticker-track" id="ticker"></div>
 </div>
 
 <header>
   <div class="wrap">
     <div class="head">
-      <h1 class="logo">ตลาด<b>วันนี้</b></h1>
+      <h1 class="logo serif">ตลาดวันนี้</h1>
       <span class="date" id="today"></span>
     </div>
     <nav id="filters" aria-label="หมวดข่าว">
@@ -131,54 +158,60 @@
 </header>
 
 <div class="wrap">
-  <main>
-    <div>
-      <article class="lead">
-        <span class="tag">ข่าวเด่น · หุ้นไทย</span>
-        <h2>ดัชนีปิดบวกแรง 18 จุด รับแรงซื้อกลุ่มพลังงานและธนาคาร ต่างชาติกลับมาซื้อสุทธิ</h2>
-        <p>นักวิเคราะห์ประเมินว่าแรงซื้อที่กลับเข้ามาสะท้อนความเชื่อมั่นต่อทิศทางดอกเบี้ยขาลง พร้อมแนะจับตาตัวเลขการส่งออกที่จะประกาศสัปดาห์หน้า</p>
-        <div class="meta">อัปเดต 17:05 น. · อ่าน 3 นาที</div>
-      </article>
+  <section class="hero">
+    <article class="lead">
+      <span class="lead-cat">หุ้นไทย</span>
+      <h2 class="serif">ดัชนีปิดบวกแรง 18 จุด รับแรงซื้อกลุ่มพลังงานและธนาคาร ต่างชาติกลับมาซื้อสุทธิ</h2>
+      <p>นักวิเคราะห์ประเมินว่าแรงซื้อที่กลับเข้ามาสะท้อนความเชื่อมั่นต่อทิศทางดอกเบี้ยขาลง พร้อมแนะจับตาตัวเลขการส่งออกที่จะประกาศสัปดาห์หน้า</p>
+      <div class="meta"><span>อัปเดต 17:05 น.</span><span>อ่าน 3 นาที</span></div>
+    </article>
 
-      <section class="chart-card" aria-labelledby="goldTitle">
-        <div class="chart-head">
-          <h3 id="goldTitle">ราคาทองคำวันนี้ (USD/ออนซ์)</h3>
-          <div><span class="chart-price mono" id="goldPrice"></span> <span class="chg mono" id="goldChg"></span></div>
-        </div>
-        <div class="chart-wrap" id="chartWrap">
-          <svg id="goldChart" viewBox="0 0 640 260" role="img" aria-label="กราฟราคาทองคำรายชั่วโมงวันนี้ ตั้งแต่ 09:00 ถึง 17:00"></svg>
-          <div class="chart-tip" id="chartTip" hidden></div>
-        </div>
-        <div class="chart-foot">ข้อมูลสมมติเพื่อการสาธิต · เลื่อนเมาส์หรือแตะที่กราฟเพื่อดูราคาแต่ละช่วงเวลา</div>
-      </section>
+    <section class="board" aria-labelledby="goldTitle">
+      <h3 id="goldTitle">ราคาทองคำวันนี้ (ดอลลาร์ต่อออนซ์)</h3>
+      <div class="board-price">
+        <strong id="goldPrice"></strong>
+        <span class="chg" id="goldChg"></span>
+      </div>
+      <div class="chart-wrap" id="chartWrap">
+        <svg id="goldChart" viewBox="0 0 640 260" role="img" aria-label="กราฟราคาทองคำรายชั่วโมงวันนี้ ตั้งแต่ 09:00 ถึง 17:00"></svg>
+        <div class="chart-tip" id="chartTip" hidden></div>
+      </div>
+      <div class="board-foot">ข้อมูลสมมติเพื่อการสาธิต เลื่อนเมาส์หรือแตะที่กราฟเพื่อดูราคาแต่ละช่วงเวลา</div>
+    </section>
+  </section>
 
-      <div class="grid" id="news"></div>
-    </div>
+  <div class="content">
+    <main>
+      <h2 class="section-title serif">ข่าวล่าสุด</h2>
+      <div id="news"></div>
+    </main>
 
     <aside>
       <section>
-        <h4>ดัชนีสำคัญ</h4>
-        <div class="idx mono" id="indices"></div>
+        <h4 class="serif">ดัชนีสำคัญ</h4>
+        <div class="idx" id="indices"></div>
       </section>
       <section>
-        <h4>หุ้นเคลื่อนไหวเด่น</h4>
-        <ul class="movers mono" id="movers"></ul>
+        <h4 class="serif">หุ้นเคลื่อนไหวเด่น</h4>
+        <ul class="movers" id="movers"></ul>
       </section>
       <section class="sub">
-        <h4>รับสรุปข่าวทุกเช้า</h4>
+        <h4 class="serif">รับสรุปข่าวทุกเช้า</h4>
+        <p>สรุปความเคลื่อนไหวตลาดก่อนเปิดการซื้อขาย ส่งถึงอีเมลของคุณ</p>
         <form id="subForm">
+          <label for="email" hidden>อีเมล</label>
           <input type="email" id="email" placeholder="อีเมลของคุณ" required>
-          <button type="submit">สมัครรับข่าว</button>
+          <button type="submit">สมัครรับสรุปข่าว</button>
         </form>
-        <div class="msg" id="subMsg" hidden>ขอบคุณ! เราจะส่งสรุปข่าวให้คุณทุกเช้า</div>
+        <div class="msg" id="subMsg" hidden>สมัครแล้ว เราจะส่งสรุปข่าวให้คุณทุกเช้า</div>
       </section>
     </aside>
-  </main>
+  </div>
 </div>
 
 <footer>
   <div class="wrap">
-    © 2026 ตลาดวันนี้ · ข้อมูลและข่าวในหน้านี้เป็นตัวอย่างสมมติเพื่อการสาธิต ไม่ใช่คำแนะนำการลงทุน
+    © 2026 ตลาดวันนี้ ข้อมูลและข่าวในหน้านี้เป็นตัวอย่างสมมติเพื่อการสาธิต ไม่ใช่คำแนะนำการลงทุน
   </div>
 </footer>
 
@@ -198,11 +231,11 @@
     { cat: "หุ้นไทย", title: "NOVA ประกาศจ่ายปันผลพิเศษ หุ้นละ 1.20 บาท", body: "ปันผลสูงกว่าที่ตลาดคาด สะท้อนกระแสเงินสดแข็งแกร่ง นักวิเคราะห์คงคำแนะนำ “ซื้อ”", sym: "NOVA", chg: 1.9, time: "17:30" },
     { cat: "เศรษฐกิจ", title: "ส่งออกเดือนตุลาคมโต 6.4% สูงสุดในรอบ 8 เดือน", body: "สินค้าอิเล็กทรอนิกส์และอาหารแปรรูปเป็นแรงหนุนหลัก กระทรวงพาณิชย์ปรับคาดการณ์ทั้งปีขึ้น", sym: "", chg: null, time: "17:15" },
     { cat: "คริปโต", title: "อีเธอเรียมพุ่ง 4% หลังเงินทุนไหลเข้ากองทุน ETF", body: "ปริมาณซื้อขายเพิ่มขึ้นเท่าตัวในรอบสัปดาห์ นักลงทุนสถาบันเริ่มกลับเข้าตลาด", sym: "ETH", chg: 4.0, time: "16:55" },
-    { cat: "ต่างประเทศ", title: "ตลาดหุ้นยุโรปปิดบวก รับตัวเลขเงินเฟ้อชะลอตัว", body: "กลุ่มธนาคารและสินค้าฟุ่มเฟือยนำตลาด ขณะที่นักลงทุนรอการประชุมธนาคารกลางสัปดาห์หน้า", sym: "EU600", chg: 0.74, time: "15:50" },
-    { cat: "หุ้นไทย", title: "ZETA ลงนามร่วมทุนพลังงานสะอาด มูลค่า 3,500 ล้านบาท", body: "โครงการโซลาร์ฟาร์มกำลังผลิต 120 เมกะวัตต์ คาดเริ่มรับรู้รายได้ปลายปีหน้า", sym: "ZETA", chg: 1.0, time: "14:20" },
     { cat: "หุ้นไทย", title: "ALPHA โชว์กำไรไตรมาส 3 โต 25% เกินคาด", body: "ยอดขายในประเทศฟื้นตัวชัด ผู้บริหารมั่นใจทั้งปีเติบโตเลขสองหลัก", sym: "ALPHA", chg: 2.4, time: "16:40" },
+    { cat: "ต่างประเทศ", title: "ตลาดหุ้นยุโรปปิดบวก รับตัวเลขเงินเฟ้อชะลอตัว", body: "กลุ่มธนาคารและสินค้าฟุ่มเฟือยนำตลาด ขณะที่นักลงทุนรอการประชุมธนาคารกลางสัปดาห์หน้า", sym: "EU600", chg: 0.74, time: "15:50" },
     { cat: "ต่างประเทศ", title: "หุ้นเทคโนโลยีสหรัฐฯ ทำนิวไฮ รับกระแส AI", body: "นักลงทุนเพิ่มน้ำหนักกลุ่มชิปและคลาวด์ ก่อนประกาศงบรอบใหม่", sym: "US TECH", chg: 0.88, time: "15:20" },
     { cat: "เศรษฐกิจ", title: "กนง. ส่งสัญญาณคงดอกเบี้ย จับตาเงินเฟ้อปลายปี", body: "ตลาดคาดการณ์มีโอกาสลดดอกเบี้ยในไตรมาสแรกของปีหน้า", sym: "", chg: null, time: "14:55" },
+    { cat: "หุ้นไทย", title: "ZETA ลงนามร่วมทุนพลังงานสะอาด มูลค่า 3,500 ล้านบาท", body: "โครงการโซลาร์ฟาร์มกำลังผลิต 120 เมกะวัตต์ คาดเริ่มรับรู้รายได้ปลายปีหน้า", sym: "ZETA", chg: 1.0, time: "14:20" },
     { cat: "หุ้นไทย", title: "DELTA ร่วงหลังประกาศเลื่อนแผนขยายโรงงาน", body: "โบรกฯ ปรับลดราคาเป้าหมาย แต่ยังมองพื้นฐานระยะยาวแข็งแกร่ง", sym: "DELTA", chg: -2.1, time: "13:30" },
     { cat: "คริปโต", title: "บิตคอยน์แกว่งตัวแคบ รอปัจจัยใหม่", body: "ปริมาณซื้อขายลดลง นักลงทุนรอดูทิศทางนโยบายการเงินโลก", sym: "BTC", chg: -0.7, time: "12:10" },
     { cat: "ต่างประเทศ", title: "ตลาดหุ้นเอเชียผสม หลังข้อมูลการผลิตอ่อนแอ", body: "ดัชนีภาคการผลิตต่ำกว่าคาด กดดันกลุ่มอุตสาหกรรมหนัก", sym: "ASIA50", chg: -0.35, time: "11:45" },
@@ -233,16 +266,16 @@
   // ข่าว + ตัวกรอง
   function renderNews(cat) {
     const list = cat === "all" ? news : news.filter(n => n.cat === cat);
-    document.getElementById("news").innerHTML = list.map(n => `
-      <article class="card">
-        <span class="tag">${n.cat}</span>
-        <h3>${n.title}</h3>
-        <p>${n.body}</p>
-        <div class="row">
-          <span>${n.time} น.</span>
-          ${n.chg !== null ? `<span class="mono chg ${cls(n.chg)}">${n.sym} ${sign(n.chg)}</span>` : ""}
+    document.getElementById("news").innerHTML = list.length ? list.map(n => `
+      <article class="story">
+        <span class="story-time">${n.time} น.</span>
+        <div>
+          <h3>${n.title}</h3>
+          <p>${n.body}</p>
+          <span class="story-cat">${n.cat}</span>
         </div>
-      </article>`).join("");
+        ${n.chg !== null ? `<div class="story-chg chg ${cls(n.chg)}">${sign(n.chg)}<small>${n.sym}</small></div>` : "<div></div>"}
+      </article>`).join("") : `<p class="empty">ยังไม่มีข่าวในหมวดนี้</p>`;
   }
   renderNews("all");
 
@@ -260,11 +293,11 @@
       ["14:00", 2683.7], ["15:00", 2687.9], ["16:00", 2684.6], ["17:00", 2685.4]
     ];
     const prevClose = 2674.17;
-    const W = 640, H = 260, L = 56, R = 16, T = 16, B = 30;
+    const W = 640, H = 260, L = 44, R = 12, T = 16, B = 30;
     const svg = document.getElementById("goldChart");
     const tip = document.getElementById("chartTip");
-    const wrap = document.getElementById("chartWrap");
     const NS = "http://www.w3.org/2000/svg";
+    const GOLD = "#e3b341";
 
     const vals = data.map(d => d[1]);
     const lo = Math.floor(Math.min(...vals) - 2), hi = Math.ceil(Math.max(...vals) + 2);
@@ -273,7 +306,6 @@
 
     const last = vals[vals.length - 1];
     const pct = ((last - prevClose) / prevClose) * 100;
-    const color = pct >= 0 ? "var(--up)" : "var(--down)";
     document.getElementById("goldPrice").textContent = fmt(last);
     const chgEl = document.getElementById("goldChg");
     chgEl.textContent = sign(pct);
@@ -295,13 +327,13 @@
     }
     // ป้ายเวลา (ทุก 2 ชั่วโมง)
     data.forEach((d, i) => {
-      if (i % 2 === 0) el("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, d[0]);
+      if (i % 2 === 0) el("text", { x: x(i), y: H - 8, "text-anchor": i === 0 ? "start" : "middle" }, d[0]);
     });
 
     const pts = data.map((d, i) => `${x(i)},${y(d[1])}`).join(" ");
-    el("polygon", { points: `${x(0)},${y(lo)} ${pts} ${x(data.length - 1)},${y(lo)}`, fill: color, opacity: "0.12" });
-    el("polyline", { points: pts, fill: "none", stroke: color, "stroke-width": "2.5", "stroke-linejoin": "round", "stroke-linecap": "round" });
-    const dot = el("circle", { r: 5, fill: color, stroke: "var(--surface)", "stroke-width": 2, cx: x(data.length - 1), cy: y(last) });
+    el("polygon", { points: `${x(0)},${y(lo)} ${pts} ${x(data.length - 1)},${y(lo)}`, fill: GOLD, opacity: "0.14" });
+    el("polyline", { points: pts, fill: "none", stroke: GOLD, "stroke-width": "3", "stroke-linejoin": "round", "stroke-linecap": "round", pathLength: "1", class: "line" });
+    const dot = el("circle", { r: 5.5, fill: GOLD, stroke: "#0d3b2e", "stroke-width": 2.5, cx: x(data.length - 1), cy: y(last) });
 
     function show(clientX) {
       const rect = svg.getBoundingClientRect();
@@ -311,7 +343,7 @@
       dot.setAttribute("cx", x(idx));
       dot.setAttribute("cy", y(data[idx][1]));
       tip.hidden = false;
-      tip.textContent = `${data[idx][0]} น. · ${fmt(data[idx][1])}`;
+      tip.textContent = `${data[idx][0]} น. ${fmt(data[idx][1])}`;
       tip.style.left = (x(idx) / W) * rect.width + "px";
       tip.style.top = (y(data[idx][1]) / H) * rect.height + "px";
     }
