@@ -64,6 +64,21 @@
   .lead p { color: var(--muted); margin: 0 0 12px; }
   .meta { font-size: 13px; color: var(--muted); }
 
+  /* Gold chart */
+  .chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .chart-head h3 { margin: 0; font-size: 18px; }
+  .chart-price { font-size: 26px; font-weight: 600; }
+  .chart-wrap { position: relative; }
+  #goldChart { width: 100%; height: auto; display: block; touch-action: none; }
+  #goldChart text { fill: var(--muted); font-size: 11px; font-family: "IBM Plex Mono", monospace; }
+  #goldChart .grid-line { stroke: var(--line); stroke-width: 1; }
+  .chart-tip {
+    position: absolute; pointer-events: none; background: var(--ink); color: var(--bg);
+    font-size: 12px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, -130%);
+  }
+  .chart-foot { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
   /* News grid */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 6px; transition: border-color .15s; }
@@ -124,6 +139,18 @@
         <p>นักวิเคราะห์ประเมินว่าแรงซื้อที่กลับเข้ามาสะท้อนความเชื่อมั่นต่อทิศทางดอกเบี้ยขาลง พร้อมแนะจับตาตัวเลขการส่งออกที่จะประกาศสัปดาห์หน้า</p>
         <div class="meta">อัปเดต 17:05 น. · อ่าน 3 นาที</div>
       </article>
+
+      <section class="chart-card" aria-labelledby="goldTitle">
+        <div class="chart-head">
+          <h3 id="goldTitle">ราคาทองคำวันนี้ (USD/ออนซ์)</h3>
+          <div><span class="chart-price mono" id="goldPrice"></span> <span class="chg mono" id="goldChg"></span></div>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <svg id="goldChart" viewBox="0 0 640 260" role="img" aria-label="กราฟราคาทองคำรายชั่วโมงวันนี้ ตั้งแต่ 09:00 ถึง 17:00"></svg>
+          <div class="chart-tip" id="chartTip" hidden></div>
+        </div>
+        <div class="chart-foot">ข้อมูลสมมติเพื่อการสาธิต · เลื่อนเมาส์หรือแตะที่กราฟเพื่อดูราคาแต่ละช่วงเวลา</div>
+      </section>
 
       <div class="grid" id="news"></div>
     </div>
@@ -225,6 +252,78 @@
     document.querySelectorAll("#filters button").forEach(b => b.setAttribute("aria-pressed", b === btn));
     renderNews(btn.dataset.cat);
   });
+
+  // ---- กราฟราคาทองคำ (SVG) ----
+  (function () {
+    const data = [
+      ["09:00", 2674.2], ["10:00", 2671.8], ["11:00", 2676.5], ["12:00", 2680.9], ["13:00", 2678.3],
+      ["14:00", 2683.7], ["15:00", 2687.9], ["16:00", 2684.6], ["17:00", 2685.4]
+    ];
+    const prevClose = 2674.17;
+    const W = 640, H = 260, L = 56, R = 16, T = 16, B = 30;
+    const svg = document.getElementById("goldChart");
+    const tip = document.getElementById("chartTip");
+    const wrap = document.getElementById("chartWrap");
+    const NS = "http://www.w3.org/2000/svg";
+
+    const vals = data.map(d => d[1]);
+    const lo = Math.floor(Math.min(...vals) - 2), hi = Math.ceil(Math.max(...vals) + 2);
+    const x = i => L + (i * (W - L - R)) / (data.length - 1);
+    const y = v => T + ((hi - v) * (H - T - B)) / (hi - lo);
+
+    const last = vals[vals.length - 1];
+    const pct = ((last - prevClose) / prevClose) * 100;
+    const color = pct >= 0 ? "var(--up)" : "var(--down)";
+    document.getElementById("goldPrice").textContent = fmt(last);
+    const chgEl = document.getElementById("goldChg");
+    chgEl.textContent = sign(pct);
+    chgEl.classList.add(cls(pct));
+
+    const el = (name, attrs, text) => {
+      const n = document.createElementNS(NS, name);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      if (text !== undefined) n.textContent = text;
+      svg.appendChild(n);
+      return n;
+    };
+
+    // เส้นกริดและป้ายราคา
+    for (let k = 0; k <= 4; k++) {
+      const v = lo + ((hi - lo) * k) / 4;
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid-line" });
+      el("text", { x: L - 8, y: y(v) + 4, "text-anchor": "end" }, v.toFixed(0));
+    }
+    // ป้ายเวลา (ทุก 2 ชั่วโมง)
+    data.forEach((d, i) => {
+      if (i % 2 === 0) el("text", { x: x(i), y: H - 8, "text-anchor": "middle" }, d[0]);
+    });
+
+    const pts = data.map((d, i) => `${x(i)},${y(d[1])}`).join(" ");
+    el("polygon", { points: `${x(0)},${y(lo)} ${pts} ${x(data.length - 1)},${y(lo)}`, fill: color, opacity: "0.12" });
+    el("polyline", { points: pts, fill: "none", stroke: color, "stroke-width": "2.5", "stroke-linejoin": "round", "stroke-linecap": "round" });
+    const dot = el("circle", { r: 5, fill: color, stroke: "var(--surface)", "stroke-width": 2, cx: x(data.length - 1), cy: y(last) });
+
+    function show(clientX) {
+      const rect = svg.getBoundingClientRect();
+      const px = ((clientX - rect.left) / rect.width) * W;
+      let idx = Math.round(((px - L) / (W - L - R)) * (data.length - 1));
+      idx = Math.max(0, Math.min(data.length - 1, idx));
+      dot.setAttribute("cx", x(idx));
+      dot.setAttribute("cy", y(data[idx][1]));
+      tip.hidden = false;
+      tip.textContent = `${data[idx][0]} น. · ${fmt(data[idx][1])}`;
+      tip.style.left = (x(idx) / W) * rect.width + "px";
+      tip.style.top = (y(data[idx][1]) / H) * rect.height + "px";
+    }
+    function reset() {
+      tip.hidden = true;
+      dot.setAttribute("cx", x(data.length - 1));
+      dot.setAttribute("cy", y(last));
+    }
+    svg.addEventListener("pointermove", e => show(e.clientX));
+    svg.addEventListener("pointerdown", e => show(e.clientX));
+    svg.addEventListener("pointerleave", reset);
+  })();
 
   // ฟอร์มสมัครรับข่าว (สาธิต ไม่มีการส่งข้อมูลจริง)
   document.getElementById("subForm").addEventListener("submit", e => {
